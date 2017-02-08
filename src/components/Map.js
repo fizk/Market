@@ -7,22 +7,33 @@ import React from 'react';
 import { withGoogleMap, GoogleMap, Marker } from "react-google-maps";
 
 const Map = withGoogleMap(props => (
-    <GoogleMap defaultZoom={10} defaultCenter={{lat: -37.8029898, lng: 144.9552392}}>
+    <GoogleMap defaultZoom={12} defaultCenter={{lat: -37.8029898, lng: 144.9552392}}>
         {props.markers.map(marker => (
             <Marker key={`marker-${marker.listing_id}`}
                     onClick={event => props.onMarkerClick(event, marker.listing_id, marker.lat,marker.lng)}
                     position={{lat: marker.lat, lng: marker.lng}}/>
         ))}
+        <Marker key={`marker-my-position`}
+                icon="http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                position={props.position}/>
     </GoogleMap>
 ));
 
 Map.propTypes = {
     markers: React.PropTypes.array,
-    onMarkerClick: React.PropTypes.func
+    onMarkerClick: React.PropTypes.func,
+    position: React.PropTypes.shape({
+        lat: React.PropTypes.number,
+        lng: React.PropTypes.number
+    })
 };
 
 Map.defaultProps = {
-    markers: []
+    markers: [],
+    position: {
+        lat: -37.8029898,
+        lng: 144.9552392
+    }
 };
 
 export {Map}

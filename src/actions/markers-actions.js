@@ -22,4 +22,11 @@ const fetchMarkers = (lat, lng, radius = 5) => {
     }
 };
 
-export {fetchMarkers}
+const selectMarker = id => {
+    return {
+        type: 'SELECT_MARKER',
+        id: id
+    }
+};
+
+export {fetchMarkers, selectMarker}

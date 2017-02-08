@@ -6,7 +6,7 @@
 import React from 'react';
 import {connect} from 'react-redux';
 import {Map} from '../components/Map';
-import {fetchMarkers} from '../actions/markers-actions';
+import {fetchMarkers, selectMarker} from '../actions/markers-actions';
 import Drawer from 'material-ui/Drawer';
 import MenuItem from 'material-ui/MenuItem';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
@@ -70,6 +70,12 @@ class App extends React.Component {
         return (
             <MuiThemeProvider muiTheme={getMuiTheme(darkBaseTheme)}>
                 <div>
+                    {this.props.selected && <div>
+                        <p>{this.props.selected[0].name}</p>
+                        <p>{this.props.selected[0].url}</p>
+                        <p>{this.props.selected[0].open}</p>
+                        <p>{this.props.selected[0].close}</p>
+                    </div>}
                     <FloatingActionButton
                         secondary={true}
                         style={{position: 'absolute', left: 20, bottom: 20, zIndex: 100}}
@@ -78,10 +84,11 @@ class App extends React.Component {
                     </FloatingActionButton>
                     <div style={{display: 'flex'}}>
                         <Map
+                            position={{lat: this.state.lat, lng: this.state.lng}}
                             markers={this.props.markers}
                             containerElement={<div style={{ height: `100vh`, width: '100vw' }} />}
                             mapElement={<div style={{ height: `100vh`, width: '100vw' }} />}
-                            onMarkerClick={(event, id, lat, lng) => console.log(event, id, lat, lng)}
+                            onMarkerClick={this.props.onClickMarker}
                         />
                     </div>
 
@@ -109,21 +116,26 @@ class App extends React.Component {
 }
 
 App.propTypes = {
-    markers: React.PropTypes.array
+    markers: React.PropTypes.array,
+    selected: React.PropTypes.array,
 };
 
 App.defaultProps = {
-    markers: []
+    markers: [],
+    selected: undefined
 };
 
 const mapStateToProps = (state) => {
     return {
-        markers: state.markers
+        markers: state.markers,
+        selected: state.selected,
     };
 };
 const mapDispatchToProps = (dispatch) => {
     return {
-        onLoadMarkers: (lat, lng, radius) => dispatch(fetchMarkers(lat, lng, radius))
+        onLoadMarkers: (lat, lng, radius) => dispatch(fetchMarkers(lat, lng, radius)),
+        onClickMarker: (event, id, lat, lng) => dispatch(selectMarker(id))
+
     };
 };
 
