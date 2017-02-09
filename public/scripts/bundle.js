@@ -35280,7 +35280,7 @@
 	        return (0, _isomorphicFetch2.default)('/listings?lat=' + lat + '&lng=' + lng + '&radius=' + radius).then(function (response) {
 	            return response.json();
 	        }).then(function (json) {
-	            dispatch(fetchMarkersEnd(json._embedded.listings));
+	            dispatch(fetchMarkersEnd(json));
 	        });
 	    };
 	};

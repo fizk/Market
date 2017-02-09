@@ -17,7 +17,7 @@ const fetchMarkers = (lat, lng, radius = 5) => {
         return fetch(`/listings?lat=${lat}&lng=${lng}&radius=${radius}`)
             .then(response => response.json())
             .then(json => {
-                dispatch(fetchMarkersEnd(json._embedded.listings));
+                dispatch(fetchMarkersEnd(json));
             });
     }
 };
