@@ -142,3 +142,5 @@ fabric.properties
 .firebaserc
 
 # End of https://www.gitignore.io/api/node,osx,webstorm
+
+vendor

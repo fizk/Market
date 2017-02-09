@@ -2,7 +2,8 @@
     "name": "root/router",
     "require": {
         "aura/router": "^3.0",
-        "zendframework/zend-diactoros": "^1.3"
+        "zendframework/zend-diactoros": "^1.3",
+        "zendframework/zend-dom": "^2.6"
     },
 
     "autoload": {
