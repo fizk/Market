@@ -35277,7 +35277,7 @@
 	    var radius = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 5;
 
 	    return function (dispatch) {
-	        return (0, _isomorphicFetch2.default)('https://107.170.87.126:9090/listings?lat=' + lat + '&lng=' + lng + '&radius=' + radius).then(function (response) {
+	        return (0, _isomorphicFetch2.default)('/listings?lat=' + lat + '&lng=' + lng + '&radius=' + radius).then(function (response) {
 	            return response.json();
 	        }).then(function (json) {
 	            dispatch(fetchMarkersEnd(json._embedded.listings));
