@@ -7,28 +7,16 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {Map} from '../components/Map';
 import {fetchMarkers, selectMarker, unSelectListing} from '../actions/markers-actions';
-import Drawer from 'material-ui/Drawer';
-import MenuItem from 'material-ui/MenuItem';
 import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
 import FlatButton from 'material-ui/FlatButton';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import darkBaseTheme from 'material-ui/styles/baseThemes/lightBaseTheme';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
-import FloatingActionButton from 'material-ui/FloatingActionButton';
-import ContentAdd from 'material-ui/svg-icons/content/add';
-import Slider from 'material-ui/Slider';
 import Markdown from 'react-remarkable';
 
 class App extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {open: false};
-        this.handleToggle = this.handleToggle.bind(this);
-        this.handleClose = this.handleClose.bind(this);
-        this.handleFetch = this.handleFetch.bind(this);
-
-        this.onSliderDragStop = this.onSliderDragStop.bind(this);
-        this.onSliderChange = this.onSliderChange.bind(this);
 
         this.state = {
             radius: 0,
@@ -41,32 +29,15 @@ class App extends React.Component {
             this.setState({
                 lat: position.coords.latitude,
                 lng: position.coords.longitude
-            })
+            });
+        }, error => {
+            console.error(error);
+            this.props.onLoadMarkers(-37.8030002, 144.9551522);
+            this.setState({
+                lat: -37.8030002,
+                lng: 144.9551522
+            });
         });
-    }
-
-    handleToggle() {
-        this.setState({open: !this.state.open});
-    }
-
-    handleClose() {
-        this.setState({open: false});
-    }
-
-    handleFetch() {
-        navigator.geolocation.getCurrentPosition(position => {
-            this.props.onLoadMarkers(position.coords.latitude, position.coords.longitude, 20);
-        });
-    }
-
-    onSliderDragStop() {
-        this.props.onLoadMarkers(this.state.lat, this.state.lng, this.state.radius);
-    }
-
-    onSliderChange(event, value) {
-        this.setState({
-            radius: value
-        })
     }
 
     render() {
@@ -75,14 +46,14 @@ class App extends React.Component {
                 <div>
                     {this.props.selected && <Card>
                         <CardHeader
-                            title="URL Avatar"
-                            subtitle="Subtitle"
+                            title={this.props.selected[0].name}
                             avatar={`http://www.mymarketsvic.com.au/directory/files/logo/${this.props.selected[0].listing_id}.jpg`}
+                            actAsExpander={true}
+                            showExpandableButton={true}
                         />
 
-                        <CardTitle title={this.props.selected[0].name} subtitle="Card subtitle" />
-                        <CardText>
-                            <p>{this.props.selected[0].url}</p>
+                        <CardText expandable={true}>
+                            <a href={this.props.selected[0].url} target="_blank">website</a>
                             <p>{this.props.selected[0].open}</p>
                             <p>{this.props.selected[0].close}</p>
                             <Markdown>
@@ -95,13 +66,7 @@ class App extends React.Component {
                         </CardActions>
                     </Card>}
 
-                    {!this.props.selected && <div style={{display: 'flex'}}>
-                        <FloatingActionButton
-                            secondary={true}
-                            style={{position: 'absolute', left: 20, bottom: 20, zIndex: 100}}
-                            onTouchTap={this.handleToggle}>
-                            <ContentAdd />
-                        </FloatingActionButton>
+                    <div style={{display: 'flex'}}>
                         <Map
                             position={{lat: this.state.lat, lng: this.state.lng}}
                             markers={this.props.markers}
@@ -109,25 +74,7 @@ class App extends React.Component {
                             mapElement={<div style={{ height: `100vh`, width: '100vw' }} />}
                             onMarkerClick={this.props.onClickMarker}
                         />
-                    </div>}
-
-                    <Drawer
-                        docked={false}
-                        width={200}
-                        open={this.state.open}
-                        onRequestChange={(open) => this.setState({open})}>
-                        <MenuItem onTouchTap={this.handleClose}>Menu Item</MenuItem>
-                        <MenuItem onTouchTap={this.handleFetch}>Menu Item 2</MenuItem>
-                        <Slider
-                            style={{width: '100%'}}
-                            step={5}
-                            onChange={this.onSliderChange}
-                            axis="x"
-                            defaultValue={5}
-                            onDragStop={this.onSliderDragStop}
-                            min={0}
-                            max={200} />
-                    </Drawer>
+                    </div>
                 </div>
             </MuiThemeProvider>
         )
