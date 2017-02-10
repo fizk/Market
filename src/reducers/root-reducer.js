@@ -22,7 +22,7 @@ export default (state = {markers: [], selected: undefined}, action) => {
                 })
             };
             break;
-        case 'UN_SELECT_MARKER':
+        case 'UN_SELECT_LISTING':
             return {
                 ...state,
                 selected: undefined

@@ -6,15 +6,18 @@
 import React from 'react';
 import {connect} from 'react-redux';
 import {Map} from '../components/Map';
-import {fetchMarkers, selectMarker} from '../actions/markers-actions';
+import {fetchMarkers, selectMarker, unSelectListing} from '../actions/markers-actions';
 import Drawer from 'material-ui/Drawer';
 import MenuItem from 'material-ui/MenuItem';
+import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+import FlatButton from 'material-ui/FlatButton';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import darkBaseTheme from 'material-ui/styles/baseThemes/lightBaseTheme';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import FloatingActionButton from 'material-ui/FloatingActionButton';
 import ContentAdd from 'material-ui/svg-icons/content/add';
 import Slider from 'material-ui/Slider';
+import Markdown from 'react-remarkable';
 
 class App extends React.Component {
     constructor(props) {
@@ -70,19 +73,35 @@ class App extends React.Component {
         return (
             <MuiThemeProvider muiTheme={getMuiTheme(darkBaseTheme)}>
                 <div>
-                    {this.props.selected && <div>
-                        <p>{this.props.selected[0].name}</p>
-                        <p>{this.props.selected[0].url}</p>
-                        <p>{this.props.selected[0].open}</p>
-                        <p>{this.props.selected[0].close}</p>
-                    </div>}
-                    <FloatingActionButton
-                        secondary={true}
-                        style={{position: 'absolute', left: 20, bottom: 20, zIndex: 100}}
-                        onTouchTap={this.handleToggle}>
-                        <ContentAdd />
-                    </FloatingActionButton>
-                    <div style={{display: 'flex'}}>
+                    {this.props.selected && <Card>
+                        <CardHeader
+                            title="URL Avatar"
+                            subtitle="Subtitle"
+                            avatar={`http://www.mymarketsvic.com.au/directory/files/logo/${this.props.selected[0].listing_id}.jpg`}
+                        />
+
+                        <CardTitle title={this.props.selected[0].name} subtitle="Card subtitle" />
+                        <CardText>
+                            <p>{this.props.selected[0].url}</p>
+                            <p>{this.props.selected[0].open}</p>
+                            <p>{this.props.selected[0].close}</p>
+                            <Markdown>
+                                {this.props.selected[0].content}
+                            </Markdown>
+                        </CardText>
+                        <CardActions>
+                            <FlatButton onTouchTap={this.props.onClickCardDiscard} label="close" />
+                            {/*<FlatButton label="Action2" />*/}
+                        </CardActions>
+                    </Card>}
+
+                    {!this.props.selected && <div style={{display: 'flex'}}>
+                        <FloatingActionButton
+                            secondary={true}
+                            style={{position: 'absolute', left: 20, bottom: 20, zIndex: 100}}
+                            onTouchTap={this.handleToggle}>
+                            <ContentAdd />
+                        </FloatingActionButton>
                         <Map
                             position={{lat: this.state.lat, lng: this.state.lng}}
                             markers={this.props.markers}
@@ -90,7 +109,7 @@ class App extends React.Component {
                             mapElement={<div style={{ height: `100vh`, width: '100vw' }} />}
                             onMarkerClick={this.props.onClickMarker}
                         />
-                    </div>
+                    </div>}
 
                     <Drawer
                         docked={false}
@@ -134,7 +153,8 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
     return {
         onLoadMarkers: (lat, lng, radius) => dispatch(fetchMarkers(lat, lng, radius)),
-        onClickMarker: (event, id, lat, lng) => dispatch(selectMarker(id))
+        onClickMarker: (event, id, lat, lng) => dispatch(selectMarker(id)),
+        onClickCardDiscard: () => dispatch(unSelectListing())
 
     };
 };

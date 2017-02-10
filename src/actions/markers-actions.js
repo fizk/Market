@@ -29,4 +29,9 @@ const selectMarker = id => {
     }
 };
 
-export {fetchMarkers, selectMarker}
+const unSelectListing = () => {
+    return {
+        type: 'UN_SELECT_LISTING',
+    }
+};
+export {fetchMarkers, selectMarker, unSelectListing}
