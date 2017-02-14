@@ -35,7 +35,7 @@ MarkedCard.propTypes = {
 MarkedCard.defaultProps = {
     selected: [{
         listing_id: undefined,
-        name: 'No Name',
+        name: undefined,
         open: undefined,
         close: undefined,
         content: ''

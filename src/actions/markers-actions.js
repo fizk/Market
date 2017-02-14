@@ -13,9 +13,12 @@ const fetchMarkersEnd = (json) => {
     }
 };
 
-const fetchMarkers = (lat, lng, radius = 5) => {
+const fetchMarkers = (lat, lng, radius, from, to) => {
     return dispatch => {
-        return fetch(`/listings?lat=${lat}&lng=${lng}&radius=${radius}`)
+        const fromDate = `${from.getFullYear()}-${('0'+(from.getMonth()+1).toString()).slice(-2)}-${('0'+from.getDate().toString()).slice(-2)} 00:00`;
+        const toDate =   `${to.  getFullYear()}-${('0'+(to.  getMonth()+1).toString()).slice(-2)}-${('0'+to.  getDate().toString()).slice(-2)} 23:59`;
+
+        return fetch(`/listings?lat=${lat}&lng=${lng}&radius=${radius}&from=${fromDate}&to=${toDate}`)
             .then(response => response.json())
             .then(json => listingDecorator(json))
             .then(json => dispatch(fetchMarkersEnd(json)));

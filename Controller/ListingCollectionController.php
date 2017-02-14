@@ -32,6 +32,8 @@ class ListingCollectionController
         $lat = (float) isset($queryParams['lat']) ? $queryParams['lat'] : 0;
         $lng = (float) isset($queryParams['lng']) ? $queryParams['lng'] : 0;
         $radius = (int) isset($queryParams['radius']) ? $queryParams['radius'] : 0 ;
+        $from = isset($queryParams['from']) ? $queryParams['from'] : 0 ;
+        $to = isset($queryParams['to']) ? $queryParams['to'] : 0 ;
 
         $statement = $this->pdo->prepare("
 			SELECT `listing_id`, `name`, `open`,`close`, `lat`, `lng`, `url`,`content`,
@@ -47,10 +49,11 @@ class ListingCollectionController
               )
               AS `distance`
             FROM `listing`
+            WHERE `open` > :open AND `close` < :close
             having `distance` <= {$radius}
             ORDER BY `distance` ASC;
     	");
-        $statement->execute();
+        $statement->execute(['open' => $from, 'close' => $to]);
         $listings = array_map(function ($listing) {
             return (new ListingHydrator())->hydrate($listing, new Listing());
         }, $statement->fetchAll(PDO::FETCH_ASSOC));
