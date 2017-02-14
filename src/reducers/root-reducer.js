@@ -16,16 +16,22 @@ export default (state = {markers: [], selected: undefined}, action) => {
             break;
         case 'SELECT_MARKER':
             return {
-                ...state,
+                markers: state.markers.map(item => {
+                    if (item.listing_id == action.id) {
+                        return {
+                            ...item,
+                            selected: true
+                        }
+                    } else {
+                        return {
+                            ...item,
+                            selected: false
+                        }
+                    }
+                }),
                 selected: state.markers.filter(item => {
                     return item.listing_id == action.id;
                 })
-            };
-            break;
-        case 'UN_SELECT_LISTING':
-            return {
-                ...state,
-                selected: undefined
             };
             break;
         default:
