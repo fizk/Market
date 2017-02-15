@@ -38,6 +38,14 @@ class App extends React.Component {
             to: this.getNextSaturday(),
         };
 
+        this.radiusRange = [
+            {value:  1, label: 'One km'},
+            {value:  5, label: 'Five km'},
+            {value: 10, label: 'Ten km'},
+            {value: 20, label: 'Twenty km'},
+            {value: 50, label: 'Fifty km'}
+        ];
+
         navigator.geolocation.getCurrentPosition(position => {
             this.setState({
                 lat: position.coords.latitude,
@@ -138,29 +146,26 @@ class App extends React.Component {
                         open={this.state.drawerOpen}
                         onRequestChange={(open) => this.setState({drawerOpen: open})}>
                         <SelectField
-                            floatingLabelText="Frequency"
-                            value={this.state.value}
-                            onChange={this.handleRadiusChange}
-                        >
-                            <MenuItem value={1} primaryText="One" />
-                            <MenuItem value={5} primaryText="Five" />
-                            <MenuItem value={10} primaryText="Ten" />
-                            <MenuItem value={20} primaryText="Twenty" />
-                            <MenuItem value={50} primaryText="Fifty" />
+                            floatingLabelText="Radius"
+                            value={this.state.radius}
+                            onChange={this.handleRadiusChange}>
+                            {this.radiusRange.map(item => <MenuItem key={`select-field-${item.label}`} value={item.value} primaryText={item.label} />)}
                         </SelectField>
                         <DatePicker
-                            floatingLabelText="From date"
+                            floatingLabelText="From"
+                            value={this.state.from}
                             onChange={this.handleFromDateChange}
                         />
                         <DatePicker
-                            floatingLabelText="To date"
+                            floatingLabelText="To"
+                            value={this.state.to}
                             onChange={this.handleToDateChange}
                         />
                     </Drawer>
                     <Map
                         position={{lat: this.state.lat, lng: this.state.lng}}
                         markers={this.props.markers}
-                        containerElement={<div style={{ height: `100vh`, width: '100vw', position: 'absolute' }} />}
+                        containerElement={<div style={{ height: `100vh`, width: '100vw', position: 'absolute', top: 0 }} />}
                         mapElement={<div style={{ height: `100vh`, width: '100vw' }} />}
                         onMarkerClick={this.props.onClickMarker}
                         onMapClick={this.handleMapClick}

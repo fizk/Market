@@ -58,6 +58,13 @@ class ListingCollectionController
             return (new ListingHydrator())->hydrate($listing, new Listing());
         }, $statement->fetchAll(PDO::FETCH_ASSOC));
 
+        $listings = array_map(function($item) {
+          $statement = $this->pdo->prepare("select `category` from `category` where `listing_id` = :listing_id");
+          $statement->execute(['listing_id' => $item->getListingId()]);
+          $categories = $statement->fetchAll(PDO::FETCH_ASSOC);
+          return $item->setCategories(array_map(function($c) { return $c['category'];}, $categories));
+        }, $listings);
+
         $response = $response->withStatus(200)
             ->withHeader('Content-type', 'text/json');
 

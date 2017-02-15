@@ -10,18 +10,18 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use Zend\Dom\Query;
 
- function extractDate($string) {
+function extractDate($string) {
     $result = [];
     preg_match('/([a-zA-Z]{3}) ([0-9]{1,2})([a-z]{1,3}) ([a-zA-Z]{3}) (from) (([0-9]{1,2})(\.[0-9]{0,2})?(am|pm)) (to) (([0-9]{1,2})(\.[0-9]{0,2})?(am|pm))/', $string, $result);
-     return count($result) > 14 ? [
-         $result[2],
-         $result[4],
-         $result[7],
-         $result[9],
-         $result[12],
-         $result[14],
-     ] : [1, 1, 0, 'am', 0, 'am'];
- }
+    return count($result) > 14 ? [
+        $result[2],
+        $result[4],
+        $result[7],
+        $result[9],
+        $result[12],
+        $result[14],
+    ] : [1, 1, 0, 'am', 0, 'am'];
+}
 
 $dom = new Query(file_get_contents('http://www.mymarketsvic.com.au/directory/victorian-weekend-markets-calendar.php'));
 $result = $dom->execute('#content > a');
@@ -35,7 +35,7 @@ foreach ($result as $item) {
     ];
 }
 
-$result = [];
+$pdo = new PDO('mysql:host=127.0.0.1;port=3306;dbname=market;charset=UTF8;','root','');
 
 foreach ($list as $item) {
     $html = @file_get_contents($item['url']);
@@ -60,6 +60,15 @@ foreach ($list as $item) {
         $paragraphs[] = addslashes($value->nodeValue);
     }
 
+    $excludedCategories = ['PLEASE CHECK THE DATES', 'Market', 'No Longer Operating'];
+    $categoriesElements = $dom->execute('#content a[href*="directory/category"]');
+    $categories = [];
+    foreach($categoriesElements as $c) {
+        if (!in_array($c->nodeValue, $excludedCategories)) {
+            $categories[] = $c->nodeValue;
+        }
+    }
+
     $element = [
         'id' => (int) $idMatch[2],
         'url' => $item['url'],
@@ -69,25 +78,37 @@ foreach ($list as $item) {
             date('H:i', strtotime("{$date[2]}{$date[3]}")),
             date('H:i', strtotime("{$date[4]}{$date[5]}")),
         ],
-        'content' => implode("\n\n", $paragraphs),
+        'categories' => $categories,
+        'content' => trim(implode("\n\n", $paragraphs)),
         'location' => count($latLngMatch) >3 ? [
             (float) $latLngMatch[2],
             (float) $latLngMatch[3]
         ] : [0,0],
     ];
+
+    $statement = $pdo->prepare("
+        insert into `listing`
+            (`listing_id`,`name`,`open`,`close`,`location`,`lat`,`lng`,`url`,`content`) values
+            (:listing_id, :name, :open, :close, GEOMFROMTEXT('Point({$element['location'][0]} {$element['location'][1]})'), :lat, :lng, :url, :content)
+            ON DUPLICATE KEY UPDATE `open` = :open, `close` = :close, `content` = :content
+    ");
+    $statement->execute([
+        'listing_id' => $element['id'],
+        'name' => $element['value'],
+        'open' => "{$element['date']} {$element['time'][0]}",
+        'close' => "{$element['date']} {$element['time'][1]}",
+        'lat' => $element['location'][0],
+        'lng' => $element['location'][1],
+        'url' => $element['url'],
+        'content' => $element['content']
+    ]);
+
+    $emptyCategory = $pdo->prepare("delete from `category` where `listing_id` = :listing_id");
+    $emptyCategory->execute(['listing_id' => $element['id']]);
+
+    $fillCategory = $pdo->prepare("insert into `category` set `listing_id` = :listing_id, `category` = :category");
+    foreach ($element['categories'] as $key => $value) {
+        $fillCategory->execute(['listing_id' => $element['id'], 'category' => $value]);
+    }
     echo '.';
-    // print_r($element);
-
-    $result[$element['id']] = $element;
 }
-file_put_contents('./market.json', json_encode($result));
-
-
-$inserts = array_map(function($item) {
-    return "({$item['id']}, \"{$item['value']}\", '{$item['date']} {$item['time'][0]}', '{$item['date']} {$item['time'][1]}', GEOMFROMTEXT('Point({$item['location'][0]} {$item['location'][1]})'), {$item['location'][0]}, {$item['location'][1]}, '{$item['url']}', '{$item['content']}' )";
-}, $result);
-
-file_put_contents(
-    './market.sql',
-    "insert into `listing` (`listing_id`, `name`, `open`, `close`, `location`, `lat`, `lng`, `url`, `content`) values " . implode(",\n", $inserts) . ";"
-);

@@ -33,6 +33,9 @@ class Listing implements JsonSerializable
     /** @var int */
     private $distance;
 
+    /** @var array */
+    private $categories = [];
+
     /**
      * @return int
      */
@@ -195,6 +198,14 @@ class Listing implements JsonSerializable
         return $this;
     }
 
+    public function setCategories(?array $categories)
+    {
+        if ($categories) {
+            $this->categories = $categories;
+        }
+        return $this;
+    }
+
     public function jsonSerialize()
     {
         return [
@@ -207,6 +218,7 @@ class Listing implements JsonSerializable
             'url' => $this->url,
             'content' => $this->content,
             'distance' => $this->distance,
+            'categories' => $this->categories,
         ];
     }
 }

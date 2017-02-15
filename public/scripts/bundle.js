@@ -24308,6 +24308,8 @@
 	            to: _this.getNextSaturday()
 	        };
 
+	        _this.radiusRange = [{ value: 1, label: 'One km' }, { value: 5, label: 'Five km' }, { value: 10, label: 'Ten km' }, { value: 20, label: 'Twenty km' }, { value: 50, label: 'Fifty km' }];
+
 	        navigator.geolocation.getCurrentPosition(function (position) {
 	            _this.setState({
 	                lat: position.coords.latitude,
@@ -24401,29 +24403,28 @@
 	                        _react2.default.createElement(
 	                            _SelectField2.default,
 	                            {
-	                                floatingLabelText: 'Frequency',
-	                                value: this.state.value,
-	                                onChange: this.handleRadiusChange
-	                            },
-	                            _react2.default.createElement(_MenuItem2.default, { value: 1, primaryText: 'One' }),
-	                            _react2.default.createElement(_MenuItem2.default, { value: 5, primaryText: 'Five' }),
-	                            _react2.default.createElement(_MenuItem2.default, { value: 10, primaryText: 'Ten' }),
-	                            _react2.default.createElement(_MenuItem2.default, { value: 20, primaryText: 'Twenty' }),
-	                            _react2.default.createElement(_MenuItem2.default, { value: 50, primaryText: 'Fifty' })
+	                                floatingLabelText: 'Radius',
+	                                value: this.state.radius,
+	                                onChange: this.handleRadiusChange },
+	                            this.radiusRange.map(function (item) {
+	                                return _react2.default.createElement(_MenuItem2.default, { key: 'select-field-' + item.label, value: item.value, primaryText: item.label });
+	                            })
 	                        ),
 	                        _react2.default.createElement(_DatePicker2.default, {
-	                            floatingLabelText: 'From date',
+	                            floatingLabelText: 'From',
+	                            value: this.state.from,
 	                            onChange: this.handleFromDateChange
 	                        }),
 	                        _react2.default.createElement(_DatePicker2.default, {
-	                            floatingLabelText: 'To date',
+	                            floatingLabelText: 'To',
+	                            value: this.state.to,
 	                            onChange: this.handleToDateChange
 	                        })
 	                    ),
 	                    _react2.default.createElement(_Map.Map, {
 	                        position: { lat: this.state.lat, lng: this.state.lng },
 	                        markers: this.props.markers,
-	                        containerElement: _react2.default.createElement('div', { style: { height: '100vh', width: '100vw', position: 'absolute' } }),
+	                        containerElement: _react2.default.createElement('div', { style: { height: '100vh', width: '100vw', position: 'absolute', top: 0 } }),
 	                        mapElement: _react2.default.createElement('div', { style: { height: '100vh', width: '100vw' } }),
 	                        onMarkerClick: this.props.onClickMarker,
 	                        onMapClick: this.handleMapClick
@@ -63636,6 +63637,13 @@
 	                        null,
 	                        this.props.selected[0].close
 	                    ),
+	                    this.props.selected[0].categories.map(function (category) {
+	                        return _react2.default.createElement(
+	                            'p',
+	                            { key: 'category-' + category },
+	                            category
+	                        );
+	                    }),
 	                    _react2.default.createElement(
 	                        _reactRemarkable2.default,
 	                        null,
@@ -63659,7 +63667,8 @@
 	        name: undefined,
 	        open: undefined,
 	        close: undefined,
-	        content: ''
+	        content: '',
+	        categories: []
 	    }]
 	};
 

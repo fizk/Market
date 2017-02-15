@@ -21,6 +21,9 @@ class MarkedCard extends React.Component {
                 <a href={this.props.selected[0].url} target="_blank">website</a>
                 <p>{this.props.selected[0].open}</p>
                 <p>{this.props.selected[0].close}</p>
+                {this.props.selected[0].categories.map(category => {
+                    return <p key={`category-${category}`}>{category}</p>
+                })}
                 <Markdown>
                     {this.props.selected[0].content}
                 </Markdown>
@@ -38,7 +41,8 @@ MarkedCard.defaultProps = {
         name: undefined,
         open: undefined,
         close: undefined,
-        content: ''
+        content: '',
+        categories: []
     }]
 };
 
