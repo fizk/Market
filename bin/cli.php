@@ -23,6 +23,8 @@ function extractDate($string) {
     ] : [1, 1, 0, 'am', 0, 'am'];
 }
 
+echo "[" . date('Y-m-d H:i:s') . "] ";
+
 $dom = new Query(file_get_contents('http://www.mymarketsvic.com.au/directory/victorian-weekend-markets-calendar.php'));
 $result = $dom->execute('#content > a');
 
