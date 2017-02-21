@@ -1,49 +1,89 @@
-/**
- * Created by einar.adalsteinsson on 2/13/17.
- */
+'use strict';
 
 import React from 'react';
 import Markdown from 'react-remarkable';
 import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
 
 class MarkedCard extends React.Component {
-    render() {
-        return (<Card containerStyle={{zIndex: 1, position: 'absolute', bottom: 0, width: '100vw', backgroundColor: 'white'}}>
-            <CardHeader
-                title={this.props.selected[0].name}
-                subtitle={this.props.selected[0].open}
-                avatar={`http://www.mymarketsvic.com.au/directory/files/logo/${this.props.selected[0].listing_id}.jpg`}
-                actAsExpander={true}
-                showExpandableButton={true}
-            />
+    constructor(props) {
+        super(props);
+        this.state = {
+            expanded: false
+        };
+        this.handleExpandChange = this.handleExpandChange.bind(this);
+    }
 
-            <CardText expandable={true}>
-                <a href={this.props.selected[0].url} target="_blank">website</a>
-                <p>{this.props.selected[0].open}</p>
-                <p>{this.props.selected[0].close}</p>
-                {this.props.selected[0].categories.map(category => {
-                    return <p key={`category-${category}`}>{category}</p>
-                })}
-                <Markdown>
-                    {this.props.selected[0].content}
-                </Markdown>
-            </CardText>
-        </Card>);
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.active === false) {
+            this.setState({
+                expanded: false
+            });
+        }
+    }
+
+    handleExpandChange = (expanded) => {
+        this.setState({
+            expanded: expanded
+        });
+    };
+
+    render() {
+        const cardStyle = {
+            zIndex: 1,
+            position: 'absolute',
+            bottom: 0,
+            width: '100vw',
+            backgroundColor: 'white'
+        };
+        
+        return (
+            <Card expanded={this.state.expanded}
+                  onExpandChange={this.handleExpandChange}
+                  containerStyle={cardStyle}>
+                <CardHeader
+                    title={this.props.marked.name}
+                    subtitle={this.props.marked.open}
+                    avatar={this.props.marked.avatarUrl}
+                    actAsExpander={this.props.active}
+                    showExpandableButton={this.props.active}/>
+                <CardText expandable={true}>
+                    <a href={this.props.marked.url} target="_blank">website</a>
+                    <p>{this.props.marked.open}</p>
+                    <p>{this.props.marked.close}</p>
+                    {this.props.marked.categories.map(category => {
+                        return <p key={`category-${category.category}`}>{category.category}</p>
+                    })}
+                    <Markdown>
+                        {this.props.marked.content}
+                    </Markdown>
+                </CardText>
+            </Card>
+        );
     }
 }
+
 MarkedCard.propTypes = {
-    selected: React.PropTypes.array,
+    active: React.PropTypes.bool,
+    marked: React.PropTypes.shape({
+        listing_id: React.PropTypes.number,
+        name: React.PropTypes.string,
+        open: React.PropTypes.string,
+        close: React.PropTypes.string,
+        content: React.PropTypes.string,
+        categories: React.PropTypes.array
+    }),
 };
 
 MarkedCard.defaultProps = {
-    selected: [{
+    active: false,
+    marked: {
         listing_id: undefined,
         name: undefined,
         open: undefined,
         close: undefined,
         content: '',
         categories: []
-    }]
+    }
 };
 
 export {MarkedCard}

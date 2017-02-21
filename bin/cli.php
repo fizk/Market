@@ -80,6 +80,7 @@ foreach ($list as $item) {
             date('H:i', strtotime("{$date[2]}{$date[3]}")),
             date('H:i', strtotime("{$date[4]}{$date[5]}")),
         ],
+        'avatar' => @file_get_contents("http://www.mymarketsvic.com.au/directory/files/logo/{$idMatch[2]}.jpg") != false,
         'categories' => $categories,
         'content' => trim(implode("\n\n", $paragraphs)),
         'location' => count($latLngMatch) >3 ? [
@@ -87,12 +88,11 @@ foreach ($list as $item) {
             (float) $latLngMatch[3]
         ] : [0,0],
     ];
-
     $statement = $pdo->prepare("
         insert into `listing`
-            (`listing_id`,`name`,`open`,`close`,`location`,`lat`,`lng`,`url`,`content`) values
-            (:listing_id, :name, :open, :close, GEOMFROMTEXT('Point({$element['location'][0]} {$element['location'][1]})'), :lat, :lng, :url, :content)
-            ON DUPLICATE KEY UPDATE `open` = :open, `close` = :close, `content` = :content
+            (`listing_id`,`name`,`open`,`close`,`location`,`lat`,`lng`,`url`,`content`, `avatar`) values
+            (:listing_id, :name, :open, :close, GEOMFROMTEXT('Point({$element['location'][0]} {$element['location'][1]})'), :lat, :lng, :url, :content, :avatar)
+            ON DUPLICATE KEY UPDATE `open` = :open, `close` = :close, `content` = :content, `avatar` = :avatar
     ");
     $statement->execute([
         'listing_id' => $element['id'],
@@ -102,7 +102,8 @@ foreach ($list as $item) {
         'lat' => $element['location'][0],
         'lng' => $element['location'][1],
         'url' => $element['url'],
-        'content' => $element['content']
+        'content' => $element['content'],
+        'avatar' => $element['avatar']
     ]);
 
     $emptyCategory = $pdo->prepare("delete from `category` where `listing_id` = :listing_id");

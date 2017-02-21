@@ -20,6 +20,7 @@ class Listing
             ->setLng($data['lng'])
             ->setUrl($data['url'])
             ->setContent($data['content'])
+            ->setAvatar((bool) $data['avatar'])
             ->setDistance(isset($data['distance']) ? $data['distance'] : null);
     }
 }

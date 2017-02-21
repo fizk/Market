@@ -1,206 +1,140 @@
-/**
- * Created by einar.adalsteinsson on 1/3/17.
- */
 'use strict';
 
 import React from 'react';
-import {connect} from 'react-redux';
-import {Map} from '../components/Map';
-import {fetchMarkers, selectMarker} from '../actions/markers-actions';
+
 import Drawer from 'material-ui/Drawer';
-import MenuItem from 'material-ui/MenuItem';
+import Badge from 'material-ui/Badge';
 import AppBar from 'material-ui/AppBar';
 import IconButton from 'material-ui/IconButton';
-import NavigationClose from 'material-ui/svg-icons/navigation/close';
-import SelectField from 'material-ui/SelectField';
-import DatePicker from 'material-ui/DatePicker';
+import MenuItem from 'material-ui/MenuItem';
+import Divider from 'material-ui/Divider';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import darkBaseTheme from 'material-ui/styles/baseThemes/lightBaseTheme';
+import uiTheme from 'material-ui/styles/baseThemes/lightBaseTheme';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
-import {MarkedCard} from './MarkedCard';
+import NavigationClose from 'material-ui/svg-icons/navigation/menu';
+import MapIcon from 'material-ui/svg-icons/maps/map';
+import ListIcon from 'material-ui/svg-icons/action/list';
 
-class App extends React.Component {
+import {MarkedCard} from './MarkedCard';
+import {QueryFilter} from './QueryFilter';
+import {Layout, LayoutBody, LayoutHeader} from './Layout';
+import {ListingList} from './ListingList';
+import {ListingMap} from './ListingMap';
+
+const navigationItems = {
+    LIST: 'navigation-list',
+    MAP: 'navigation-map',
+};
+
+export default class App extends React.Component {
     constructor(props) {
         super(props);
 
-        this.handleMapClick = this.handleMapClick.bind(this);
         this.handleOpenDrawer = this.handleOpenDrawer.bind(this);
-        this.handleRadiusChange = this.handleRadiusChange.bind(this);
-        this.handleFromDateChange = this.handleFromDateChange.bind(this);
-        this.handleToDateChange = this.handleToDateChange.bind(this);
+        this.handleChangeDrawer = this.handleChangeDrawer.bind(this);
+        this.handleViewChange = this.handleViewChange.bind(this);
 
         this.state = {
             drawerOpen: false,
-            radius: 5,
-            lat: 0,
-            lng: 0,
-            from: this.getNextSaturday(),
-            to: this.getNextSaturday(),
-        };
-
-        this.radiusRange = [
-            {value:  1, label: 'One km'},
-            {value:  5, label: 'Five km'},
-            {value: 10, label: 'Ten km'},
-            {value: 20, label: 'Twenty km'},
-            {value: 50, label: 'Fifty km'}
-        ];
-
-        navigator.geolocation.getCurrentPosition(position => {
-            this.setState({
-                lat: position.coords.latitude,
-                lng: position.coords.longitude
-            });
-            this.props.onLoadMarkers(
-                position.coords.latitude,
-                position.coords.longitude,
-                this.state.radius,
-                this.state.from,
-                this.state.to
-            );
-        }, error => {
-            console.error(error);
-            this.setState({
-                lat: -37.8030002,
-                lng: 144.9551522
-            });
-            this.props.onLoadMarkers(-37.8030002, 144.9551522);
-
-        });
-    }
-
-    handleFromDateChange(event, date) {
-        this.setState({from: date});
-        this.props.onLoadMarkers(
-            this.state.lat,
-            this.state.lng,
-            this.state.radius,
-            date,
-            this.state.to
-        );
-    }
-
-    handleToDateChange(event, date) {
-        this.setState({to: date});
-        this.props.onLoadMarkers(
-            this.state.lat,
-            this.state.lng,
-            this.state.radius,
-            this.state.from,
-            date
-        );
+            view: navigationItems.MAP
+        }
     }
 
     handleOpenDrawer() {
         this.setState({drawerOpen: true});
     }
 
-    handleMapClick(lat, lng) {
+    handleChangeDrawer(open) {
+        this.setState({drawerOpen: open});
+    }
+
+    handleViewChange(type) {
         this.setState({
-            lat: lat,
-            lng: lng
-        });
-        this.props.onLoadMarkers(
-            lat,
-            lng,
-            this.state.radius,
-            this.state.from,
-            this.state.to
-        );
+            view: type,
+            drawerOpen: false,
+        })
     }
-
-    handleRadiusChange(event, index, value) {
-        this.setState({radius: value});
-        this.props.onLoadMarkers(
-            this.state.lat,
-            this.state.lng,
-            value,
-            this.state.from,
-            this.state.to
-        );
-    }
-
-    /** @todo not tested */
-    getNextSaturday() {
-        const day = new Date().getDay();
-        if (day == 5) {
-            return new Date();
-        } else {
-            return new Date(new Date().setDate(new Date().getDate() + (6 - day)));
-
-        }
-    }
-
 
     render() {
         return (
-            <MuiThemeProvider muiTheme={getMuiTheme(darkBaseTheme)}>
-                <div>
-                    <AppBar
-                        title={`Market Map`}
-                        iconElementLeft={<IconButton onTouchTap={this.handleOpenDrawer}><NavigationClose /></IconButton>}
-                    />
+            <MuiThemeProvider muiTheme={getMuiTheme(uiTheme)}>
+                <Layout>
+                    <LayoutHeader>
+                        <AppBar
+                            iconElementRight={
+                                <Badge badgeContent={this.props.listings.length} secondary={true} />
+                            }
+                            iconElementLeft={
+                                <IconButton onTouchTap={this.handleOpenDrawer}>
+                                    <NavigationClose />
+                                </IconButton>
+                            }
+                        />
+                    </LayoutHeader>
+                    <LayoutBody>
+                        {this.props.marked && <MarkedCard marked={this.props.marked} active={true}/>}
+
+                        {this.state.view === navigationItems.MAP && <ListingMap
+                            onMapClick={(lat, lng) => this.props.onQueryFilterChange({lat: lat, lng: lng})}
+                            onMarkerClick={(event, id, lat, lng) => this.props.onListingSelect(id)}
+                            listings={this.props.listings}
+                            lat={this.props.lat}
+                            lng={this.props.lng} />}
+
+                        {this.state.view === navigationItems.LIST && <ListingList
+                            listings={this.props.listings}
+                            onItemClick={id => this.props.onListingSelect(id)}
+                        />}
+
+                    </LayoutBody>
                     <Drawer
                         docked={false}
-                        width={200}
+                        width={300}
                         open={this.state.drawerOpen}
-                        onRequestChange={(open) => this.setState({drawerOpen: open})}>
-                        <SelectField
-                            floatingLabelText="Radius"
-                            value={this.state.radius}
-                            onChange={this.handleRadiusChange}>
-                            {this.radiusRange.map(item => <MenuItem key={`select-field-${item.label}`} value={item.value} primaryText={item.label} />)}
-                        </SelectField>
-                        <DatePicker
-                            floatingLabelText="From"
-                            value={this.state.from}
-                            onChange={this.handleFromDateChange}
+                        onRequestChange={this.handleChangeDrawer}>
+                        <MenuItem
+                            leftIcon={<MapIcon />}
+                            primaryText="Map"
+                            onTouchTap={() => this.handleViewChange(navigationItems.MAP)}
                         />
-                        <DatePicker
-                            floatingLabelText="To"
-                            value={this.state.to}
-                            onChange={this.handleToDateChange}
+                        <MenuItem
+                            leftIcon={<ListIcon />}
+                            primaryText="List"
+                            onTouchTap={() => this.handleViewChange(navigationItems.LIST)}
+                        />
+
+                        <Divider />
+
+                        <QueryFilter
+                            categories={this.props.categories}
+                            radius={this.props.radius}
+                            category={this.props.category}
+                            from={this.props.from}
+                            to={this.props.to}
+                            onRadiusChange={radius => this.props.onQueryFilterChange({radius: radius})}
+                            onFromChange={date => this.props.onQueryFilterChange({from: date})}
+                            onToChange={date => this.props.onQueryFilterChange({to: date})}
+                            onCategoryChange={category => this.props.onQueryFilterChange({category: category})}
                         />
                     </Drawer>
-                    <Map
-                        position={{lat: this.state.lat, lng: this.state.lng}}
-                        markers={this.props.markers}
-                        containerElement={<div style={{ height: `100vh`, width: '100vw', position: 'absolute', top: 0 }} />}
-                        mapElement={<div style={{ height: `100vh`, width: '100vw' }} />}
-                        onMarkerClick={this.props.onClickMarker}
-                        onMapClick={this.handleMapClick}
-                    />
-                    <MarkedCard selected={this.props.selected} />
-                </div>
+                </Layout>
             </MuiThemeProvider>
         )
     }
 }
 
 App.propTypes = {
-    markers: React.PropTypes.array,
-    selected: React.PropTypes.array,
+    listings: React.PropTypes.array,
+    categories: React.PropTypes.array,
+    marked: React.PropTypes.object,
+    onQueryFilterChange: React.PropTypes.func,
+    onListingSelect: React.PropTypes.func
 };
 
 App.defaultProps = {
-    markers: [],
-    selected: undefined
+    listings: [],
+    categories: [],
+    marked: undefined,
+    onQueryFilterChange: value => {},
+    onListingSelect: id => {}
 };
-
-const mapStateToProps = (state) => {
-    return {
-        markers: state.markers,
-        selected: state.selected,
-    };
-};
-const mapDispatchToProps = (dispatch) => {
-    return {
-        onLoadMarkers: (lat, lng, radius, from, to) => dispatch(fetchMarkers(lat, lng, radius, from, to)),
-        onClickMarker: (event, id, lat, lng) => dispatch(selectMarker(id)),
-
-    };
-};
-
-const AppProvider = connect(mapStateToProps, mapDispatchToProps)(App);
-
-export {App, AppProvider}

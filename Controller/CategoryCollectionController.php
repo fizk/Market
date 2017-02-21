@@ -1,13 +1,13 @@
 <?php
 namespace Market\Controller;
 
-use Market\Model\Listing;
-use Market\Hydrator\Listing as ListingHydrator;
+use Market\Model\Category;
+use Market\Hydrator\Category as CategoryHydrator;
 use PDO;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
-class ListingEntryController
+class CategoryCollectionController
 {
     /** @var PDO  */
     private $pdo;
@@ -28,25 +28,18 @@ class ListingEntryController
      */
     public function __invoke(RequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $id = (int) $request->getAttribute('id');
-
         $statement = $this->pdo->prepare("
-			SELECT `listing_id`, `name`, `open`,`close`, `lat`, `lng`, `url`,`content`, `avatar`,
-            FROM `listing`
-            WHERE `listing_id` = :listing_id
-    	");
-        $statement->execute(['listing_id' => $id]);
-        $object = $statement->fetch(PDO::FETCH_ASSOC);
+            select distinct `category` from category order by `category`;
+        ");
+        $statement->execute();
+        $listings = array_map(function ($listing) {
+            return (new CategoryHydrator())->hydrate($listing, new Category());
+        }, $statement->fetchAll(PDO::FETCH_ASSOC));
 
-        $listing = $object
-            ? (new ListingHydrator())->hydrate($object, new Listing())
-            : null;
-
-        $response = $response->withStatus($listing ? 200 : 404)
+        $response = $response->withStatus(200)
             ->withHeader('Content-type', 'text/json');
 
-        $response->getBody()->write(json_encode($listing));
+        $response->getBody()->write(json_encode($listings));
         return $response;
     }
-
 }

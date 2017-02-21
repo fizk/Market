@@ -10,7 +10,7 @@ import {createStore, applyMiddleware} from 'redux';
 import thunkMiddleware from 'redux-thunk'
 import rootReducer from '../reducers/root-reducer';
 import {Provider} from 'react-redux'
-import {AppProvider} from '../components/App';
+import {AppProvider} from '../components/AppProvider';
 
 injectTapEventPlugin();
 

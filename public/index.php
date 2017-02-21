@@ -16,6 +16,7 @@ use Zend\Diactoros\Response;
 use Market\Controller\IndexController;
 use Market\Controller\ListingCollectionController;
 use Market\Controller\ListingEntryController;
+use Market\Controller\CategoryCollectionController;
 
 $config = require_once './config/config.php';
 
@@ -25,6 +26,7 @@ $map = $routerContainer->getMap();
 $map->get('index', '/', $config['controllers'][IndexController::class]);
 $map->get('listings', '/listings', $config['controllers'][ListingCollectionController::class]);
 $map->get('listing', '/listings/{id}', $config['controllers'][ListingEntryController::class]);
+$map->get('categories', '/categories', $config['controllers'][CategoryCollectionController::class]);
 
 $request = Zend\Diactoros\ServerRequestFactory::fromGlobals($_SERVER, $_GET, $_POST, $_COOKIE, $_FILES);
 $matcher = $routerContainer->getMatcher();

@@ -1,6 +1,3 @@
-/**
- * Created by einar.adalsteinsson on 1/3/17.
- */
 'use strict';
 
 import React from 'react';
@@ -10,10 +7,9 @@ const Map = withGoogleMap(props => (
     <GoogleMap
         defaultZoom={12}
         defaultCenter={{lat: -37.8029898, lng: 144.9552392}}
-        onClick={(event) => props.onMapClick(event.latLng.lat(), event.latLng.lng())}
-    >
+        onClick={(event) => props.onMapClick(event.latLng.lat(), event.latLng.lng())}>
         {props.markers.map(marker => {
-            if (marker.selected) {
+            if (marker.marked) {
                 return <Marker key={`marker-${marker.listing_id}`}
                         icon="http://maps.google.com/mapfiles/ms/icons/green-dot.png"
                         position={{lat: marker.lat, lng: marker.lng}}/>

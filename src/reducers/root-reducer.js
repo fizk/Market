@@ -4,34 +4,42 @@
 
 "use strict";
 
-export default (state = {markers: [], selected: undefined}, action) => {
+export default (state = {listings: [], marked: undefined, categories: []}, action) => {
     switch (action.type) {
         case 'SET_MARKERS':
             return {
-                selected: undefined,
-                markers: Object.keys(action.data).map(key => {
+                ...state,
+                marked: undefined,
+                listings: Object.keys(action.data).map(key => {
                     return action.data[key];
                 })
             };
             break;
         case 'SELECT_MARKER':
             return {
-                markers: state.markers.map(item => {
+                ...state,
+                listings: state.listings.map(item => {
                     if (item.listing_id == action.id) {
                         return {
                             ...item,
-                            selected: true
+                            marked: true
                         }
                     } else {
                         return {
                             ...item,
-                            selected: false
+                            marked: false
                         }
                     }
                 }),
-                selected: state.markers.filter(item => {
+                marked: state.listings.filter(item => {
                     return item.listing_id == action.id;
-                })
+                }).reduce((a, b) => b, undefined)
+            };
+            break;
+        case 'FETCH_CATEGORIES':
+            return {
+                ...state,
+                categories: action.categories
             };
             break;
         default:

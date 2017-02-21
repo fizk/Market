@@ -36,6 +36,9 @@ class Listing implements JsonSerializable
     /** @var array */
     private $categories = [];
 
+    /** @var bool */
+    private $avatar = false;
+
     /**
      * @return int
      */
@@ -206,6 +209,12 @@ class Listing implements JsonSerializable
         return $this;
     }
 
+    public function setAvatar(?bool $avatar)
+    {
+        $this->avatar = $avatar;
+        return $this;
+    }
+
     public function jsonSerialize()
     {
         return [
@@ -219,6 +228,7 @@ class Listing implements JsonSerializable
             'content' => $this->content,
             'distance' => $this->distance,
             'categories' => $this->categories,
+            'avatar' => $this->avatar
         ];
     }
 }
