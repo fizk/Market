@@ -10,6 +10,30 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use Zend\Dom\Query;
 
+$urls = [];
+$current = "http://www.mymarketsvic.com.au/directory/category/market/";
+$more = true;
+while ($more) {
+    $dom = new Query(file_get_contents($current));
+    $result = $dom->execute('.listing_results_title a');
+    foreach ($result as $item) {
+        $urls[] = [
+            'url' => $item->getAttribute('href'),
+            'value' => $item->nodeValue,
+        ];
+    }
+
+    $more = false;
+    $hasStuff = $dom->execute('.page-numbers a');
+    foreach ($hasStuff as $paginationLink) {
+        if($paginationLink->nodeValue == ' >') {
+            $current = $paginationLink->getAttribute('href');
+            $more = true;
+        }
+    }
+}
+
+
 function extractDate($string) {
     $result = [];
     preg_match('/([a-zA-Z]{3}) ([0-9]{1,2})([a-z]{1,3}) ([a-zA-Z]{3}) (from) (([0-9]{1,2})(\.[0-9]{0,2})?(am|pm)) (to) (([0-9]{1,2})(\.[0-9]{0,2})?(am|pm))/', $string, $result);
@@ -25,21 +49,10 @@ function extractDate($string) {
 
 echo "[" . date('Y-m-d H:i:s') . "] ";
 
-$dom = new Query(file_get_contents('http://www.mymarketsvic.com.au/directory/victorian-weekend-markets-calendar.php'));
-$result = $dom->execute('#content > a');
-
-$list = [];
-
-foreach ($result as $item) {
-    $list[] = [
-        'url' => $item->getAttribute('href'),
-        'value' => $item->nodeValue,
-    ];
-}
 
 $pdo = new PDO('mysql:host=127.0.0.1;port=3306;dbname=market;charset=UTF8;','root','');
 
-foreach ($list as $item) {
+foreach ($urls as $item) {
     $html = @file_get_contents($item['url']);
     if ($html === false) {
         continue;
@@ -51,8 +64,11 @@ foreach ($list as $item) {
     preg_match('/(position: new google.maps.LatLng\()(-?[0-9\.]*),(-?[0-9\.]*)\)/', $html, $latLngMatch);
 
     $idMatch = [];
-    preg_match('/(id=)([0-9]*)/', $item['url'], $idMatch);
+    preg_match('/([0-9]*)(\.html)/', $item['url'], $idMatch);
 
+    if (count($matches) < 3) {
+        continue;
+    }
     $date = extractDate($matches[2]);
 
     $dom = new Query($html);
@@ -72,7 +88,7 @@ foreach ($list as $item) {
     }
 
     $element = [
-        'id' => (int) $idMatch[2],
+        'id' => (int) $idMatch[1],
         'url' => $item['url'],
         'value' => $item['value'],
         'date' => date('Y-m-d', strtotime("{$date[0]} {$date[1]} " . date('Y'))),
